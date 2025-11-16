@@ -1,0 +1,5 @@
+{
+  "name": "Paranoia Scenario Generator",
+  "description": "An application to generate complete scenarios for the Paranoia tabletop role-playing game. It provides five initial ideas, and upon user selection, generates a full scenario including plot, characters, locations, clues, and images.",
+  "requestFramePermissions": []
+}
