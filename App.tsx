@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { generateScenarioIdeas, generateScenarioContent, generateImage } from './services/geminiService';
 import type { Scenario, ScenarioContent } from './types';
@@ -6,7 +7,7 @@ import ScenarioDisplay from './components/ScenarioDisplay';
 
 declare var JSZip: any;
 
-type AppState = 'idle' | 'loadingIdeas' | 'ideasReady' | 'loadingScenario' | 'scenarioReady' | 'error';
+type AppState = 'idle' | 'loadingIdeas' | 'ideasReady' | 'selectingPlayerCount' | 'loadingScenario' | 'scenarioReady' | 'error';
 
 const Header: React.FC = () => (
     <header className="text-center my-8">
@@ -20,6 +21,7 @@ const Header: React.FC = () => (
 const App: React.FC = () => {
     const [appState, setAppState] = useState<AppState>('idle');
     const [scenarioIdeas, setScenarioIdeas] = useState<string[]>([]);
+    const [selectedIdea, setSelectedIdea] = useState<string | null>(null);
     const [generatedScenario, setGeneratedScenario] = useState<Scenario | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loadingMessage, setLoadingMessage] = useState<string>('');
@@ -29,6 +31,7 @@ const App: React.FC = () => {
         setError(null);
         setGeneratedScenario(null);
         setScenarioIdeas([]);
+        setSelectedIdea(null);
         setLoadingMessage("L'Ordinateur réfléchit à des missions périlleuses");
         try {
             const ideas = await generateScenarioIdeas();
@@ -39,14 +42,21 @@ const App: React.FC = () => {
             setAppState('error');
         }
     }, []);
+    
+    const handleIdeaClick = useCallback((idea: string) => {
+        setSelectedIdea(idea);
+        setAppState('selectingPlayerCount');
+    }, []);
 
-    const handleSelectIdea = useCallback(async (idea: string) => {
+    const handleGenerateScenario = useCallback(async (playerCount: number) => {
+        if (!selectedIdea) return;
+        
         setAppState('loadingScenario');
         setError(null);
         
         try {
             setLoadingMessage("Analyse du briefing de mission");
-            const scenarioContent: ScenarioContent = await generateScenarioContent(idea);
+            const scenarioContent: ScenarioContent = await generateScenarioContent(selectedIdea, playerCount);
 
             setLoadingMessage(`Génération des visuels de propagande (0/${scenarioContent.imagesPrompts.length})`);
             const imagePromises = scenarioContent.imagesPrompts.map((imgPrompt, index) => 
@@ -69,11 +79,12 @@ const App: React.FC = () => {
             setError(err instanceof Error ? err.message : 'Une erreur inconnue est survenue.');
             setAppState('error');
         }
-    }, []);
+    }, [selectedIdea]);
     
     const handleReset = useCallback(() => {
       setAppState('idle');
       setScenarioIdeas([]);
+      setSelectedIdea(null);
       setGeneratedScenario(null);
       setError(null);
     }, []);
@@ -82,9 +93,6 @@ const App: React.FC = () => {
         if (!generatedScenario) return;
 
         setLoadingMessage("Compression des données de mission...");
-        
-        // Use a temp loading state if desired, but for now we just show a message
-        // For a better UX, you could disable buttons while zipping.
         
         const zip = new JSZip();
 
@@ -98,24 +106,29 @@ const App: React.FC = () => {
             `NOM: ${pc.nom}\n\nDESCRIPTION: ${pc.description}\n\nMUTATION: ${pc.mutation}\n\nSOCIETE SECRETE: ${pc.societeSecrete}\nOBJECTIF (SOCIETE): ${pc.objectifSocieteSecrete}\n\nOBJECTIF (PERSONNEL): ${pc.objectifPersonnel}\n\n--------------------------------\n`
         ).join("\n");
         zip.file("03_personnages_joueurs.txt", joueursText);
+        
+        const briefingsText = generatedScenario.briefings.map(b =>
+            `POUR: ${b.pourJoueur}\n\n${b.contenu}\n\n--------------------------------\n`
+        ).join("\n");
+        zip.file("04_briefings.txt", briefingsText);
 
         const etapesText = generatedScenario.etapes.map((etape, index) =>
-            `ETAPE ${index + 1}: ${etape.titre}\n\n${etape.description}\n\n--------------------------------\n`
+            `ETAPE ${index + 1}: ${etape.titre}\n\n${etape.description}\n\nTABLEAU RECAPITULATIF:\n${etape.actionsTable}\n\n--------------------------------\n`
         ).join("\n");
-        zip.file("04_etapes_scenario.txt", etapesText);
+        zip.file("05_etapes_scenario.txt", etapesText);
 
         const fichesText = generatedScenario.fiches.map(fiche =>
             `FICHE: ${fiche.nom} [${fiche.type}]\n\n${fiche.description}\n\n--------------------------------\n`
         ).join("\n");
-        zip.file("05_fiches.txt", fichesText);
+        zip.file("06_fiches.txt", fichesText);
 
         const indicesText = generatedScenario.indices.map(indice =>
             `INDICE: ${indice.titre}\n\n${indice.contenu}\n\n--------------------------------\n`
         ).join("\n");
-        zip.file("06_indices.txt", indicesText);
+        zip.file("07_indices.txt", indicesText);
 
         const messagesText = generatedScenario.messagesOrdinateur.join("\n\n---\n\n");
-        zip.file("07_messages_ordinateur.txt", messagesText);
+        zip.file("08_messages_ordinateur.txt", messagesText);
 
         // 2. Add images
         const imgFolder = zip.folder("images");
@@ -183,7 +196,7 @@ const App: React.FC = () => {
                                 {scenarioIdeas.map((idea, index) => (
                                     <div
                                         key={index}
-                                        onClick={() => handleSelectIdea(idea)}
+                                        onClick={() => handleIdeaClick(idea)}
                                         className="p-6 border border-terminal-amber/30 hover:bg-terminal-amber/10 hover:border-terminal-amber cursor-pointer transition-all duration-300"
                                     >
                                         <p>> {idea}</p>
@@ -197,6 +210,28 @@ const App: React.FC = () => {
                                 GENERER D'AUTRES IDEES
                             </button>
                         </div>
+                    )}
+
+                    {appState === 'selectingPlayerCount' && (
+                      <div className="flex flex-col items-center">
+                        <h3 className="mb-4 text-center">[ CONFIRMEZ L'EFFECTIF DE LA MISSION ]</h3>
+                        <div className="p-6 border border-terminal-amber/30 w-full max-w-4xl mb-6">
+                            <p className="text-terminal-amber/70 mb-2">SUJET DE LA MISSION:</p>
+                            <p>> {selectedIdea}</p>
+                        </div>
+                        <h4 className="mb-6">SÉLECTIONNEZ LE NOMBRE DE CLARIFICATEURS (JETABLES) :</h4>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {[3, 4, 5, 6].map(count => (
+                                <button
+                                    key={count}
+                                    onClick={() => handleGenerateScenario(count)}
+                                    className="bg-transparent hover:bg-terminal-amber/10 text-terminal-amber py-3 px-8 border border-terminal-amber/50 hover:border-terminal-amber transition-all duration-200"
+                                >
+                                    {count} JOUEURS
+                                </button>
+                            ))}
+                        </div>
+                      </div>
                     )}
                     
                     {appState === 'scenarioReady' && generatedScenario && (

@@ -8,9 +8,15 @@ export interface PlayerCharacter {
   objectifPersonnel: string;
 }
 
+export interface Briefing {
+  pourJoueur: string;
+  contenu: string;
+}
+
 export interface ScenarioStep {
   titre: string;
   description: string;
+  actionsTable: string;
 }
 
 export interface InfoCard {
@@ -39,6 +45,7 @@ export interface Scenario {
   presentation: string;
   introduction: string;
   joueurs: PlayerCharacter[];
+  briefings: Briefing[];
   etapes: ScenarioStep[];
   fiches: InfoCard[];
   indices: Clue[];
@@ -52,6 +59,7 @@ export interface ScenarioContent {
     presentation: string;
     introduction: string;
     joueurs: PlayerCharacter[];
+    briefings: Briefing[];
     etapes: ScenarioStep[];
     fiches: InfoCard[];
     indices: Clue[];

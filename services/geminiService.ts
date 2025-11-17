@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ScenarioContent, ImagePrompt } from '../types';
 
@@ -37,18 +38,19 @@ export async function generateScenarioIdeas(): Promise<string[]> {
 }
 
 
-export async function generateScenarioContent(selectedIdea: string): Promise<ScenarioContent> {
+export async function generateScenarioContent(selectedIdea: string, playerCount: number): Promise<ScenarioContent> {
   const prompt = `
-    Agis en tant qu'expert du jeu de rôle Paranoia et maître du jeu expérimenté. En te basant sur l'idée de scénario suivante : "${selectedIdea}", génère un scénario complet, extrêmement détaillé et très long.
+    Agis en tant qu'expert du jeu de rôle Paranoia et maître du jeu expérimenté. En te basant sur l'idée de scénario suivante : "${selectedIdea}", génère un scénario complet, extrêmement détaillé et très long pour ${playerCount} joueurs.
     Le ton doit être humoristique, absurde et plein de danger, typique de Paranoia.
     Le résultat DOIT être un objet JSON valide. Ne fournis aucune explication ou texte en dehors de l'objet JSON.
     Respecte les contraintes de contenu et de longueur suivantes :
-    - La 'presentation' doit faire environ 500 mots.
-    - Chaque 'description' dans les 'etapes' du scénario doit faire au moins 300-400 mots.
-    - Chaque 'description' dans les 'fiches' doit être très détaillée, environ 200-300 mots.
-    - Génère au moins 8 fiches.
-    - Génère au moins 6 indices substantiels et détaillés.
-    - Génère au moins 8 messages de l'ordinateur.
+    - 'joueurs': Génère exactement ${playerCount} personnages joueurs.
+    - 'briefings': Génère un briefing individuel pour chaque personnage joueur. Chaque briefing doit contenir des rumeurs (vraies ou fausses) sur la mission, des PNJ, ou d'autres personnages joueurs.
+    - 'presentation': Rédige une présentation d'environ 500 mots pour le maître du jeu.
+    - 'etapes': Chaque 'description' dans les étapes doit être extrêmement détaillée, faisant environ 1000 mots. Chaque étape doit aussi inclure un 'actionsTable', qui est un tableau récapitulatif au format ASCII art. Ce tableau doit lister les actions possibles ou attendues, les indices à trouver et comment progresser.
+    - 'fiches': Génère au moins 8 fiches détaillées (200-300 mots chacune).
+    - 'indices': Génère au moins 6 indices substantiels.
+    - 'messagesOrdinateur': Génère au moins 8 messages de l'ordinateur.
   `;
   
   try {
@@ -65,7 +67,7 @@ export async function generateScenarioContent(selectedIdea: string): Promise<Sce
             introduction: { type: Type.STRING, description: "Texte d'ambiance long et immersif à lire aux joueurs." },
             joueurs: {
               type: Type.ARRAY,
-              description: "4 personnages joueurs avec des descriptions physiques et psychologiques très détaillées.",
+              description: `Une liste de ${playerCount} personnages joueurs avec des descriptions physiques et psychologiques très détaillées.`,
               items: {
                 type: Type.OBJECT,
                 properties: {
@@ -79,16 +81,29 @@ export async function generateScenarioContent(selectedIdea: string): Promise<Sce
                 required: ["nom", "description", "societeSecrete", "objectifSocieteSecrete", "mutation", "objectifPersonnel"]
               }
             },
+            briefings: {
+              type: Type.ARRAY,
+              description: "Un briefing individuel pour chaque joueur, contenant des rumeurs et des objectifs cachés.",
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  pourJoueur: { type: Type.STRING, description: "Le nom du personnage joueur concerné par ce briefing." },
+                  contenu: { type: Type.STRING, description: "Le contenu du briefing secret pour ce joueur." }
+                },
+                required: ["pourJoueur", "contenu"]
+              }
+            },
             etapes: {
               type: Type.ARRAY,
-              description: "5 à 7 étapes clés du scénario, chacune décrite en très grand détail (300-400 mots par étape).",
+              description: "5 à 7 étapes clés du scénario, chacune décrite en très grand détail (environ 1000 mots).",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   titre: { type: Type.STRING, description: "Titre de l'étape" },
-                  description: { type: Type.STRING, description: "Description très détaillée de ce qui se passe, des choix et des conséquences." }
+                  description: { type: Type.STRING, description: "Description très détaillée de ce qui se passe, des choix et des conséquences (environ 1000 mots)." },
+                  actionsTable: { type: Type.STRING, description: "Un tableau récapitulatif au format ASCII des actions possibles/attendues, indices et progression." }
                 },
-                required: ["titre", "description"]
+                required: ["titre", "description", "actionsTable"]
               }
             },
             fiches: {
@@ -134,7 +149,7 @@ export async function generateScenarioContent(selectedIdea: string): Promise<Sce
               }
             }
           },
-          required: ["titre", "presentation", "introduction", "joueurs", "etapes", "fiches", "indices", "messagesOrdinateur", "imagesPrompts"]
+          required: ["titre", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "imagesPrompts"]
         }
       }
     });

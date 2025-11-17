@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback } from 'react';
-import type { Scenario, PlayerCharacter, ScenarioStep, InfoCard, Clue, GeneratedImage } from '../types';
+import type { Scenario, PlayerCharacter, Briefing, ScenarioStep, InfoCard, Clue, GeneratedImage } from '../types';
 
 interface AccordionSectionProps {
   title: string;
@@ -32,6 +33,14 @@ const PlayerCharacterCard: React.FC<{ pc: PlayerCharacter }> = ({ pc }) => (
         <p className="mt-2"><strong>Objectif (Personnel):</strong> {pc.objectifPersonnel}</p>
     </div>
 );
+
+const BriefingCard: React.FC<{ briefing: Briefing }> = ({ briefing }) => (
+    <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid">
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">POUR: {briefing.pourJoueur}</h4>
+        <p className="whitespace-pre-wrap mt-2">{briefing.contenu}</p>
+    </div>
+);
+
 
 const InfoDisplayCard: React.FC<{ card: InfoCard }> = ({ card }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid">
@@ -94,11 +103,21 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario }) => {
                 </div>
             </AccordionSection>
             
+            <AccordionSection title="Briefings Individuels des Joueurs" isOpen={openSection === 'Briefings Individuels des Joueurs'} setIsOpen={() => toggleSection('Briefings Individuels des Joueurs')}>
+                <div className="md:columns-2 gap-4">
+                    {scenario.briefings.map((briefing, index) => <BriefingCard key={index} briefing={briefing} />)}
+                </div>
+            </AccordionSection>
+
             <AccordionSection title="Étapes du Scénario" isOpen={openSection === 'Étapes du Scénario'} setIsOpen={() => toggleSection('Étapes du Scénario')}>
                  {scenario.etapes.map((step, index) => (
-                    <div key={index} className="mb-6">
+                    <div key={index} className="mb-8 border-b border-terminal-amber/20 pb-4">
                         <h3 className="underline">ETAPE {index + 1}: {step.titre}</h3>
                         <p className="mt-2">{step.description}</p>
+                        <div className="mt-4 p-4 border border-terminal-amber/30 bg-black/50">
+                            <h4 className="mb-2 text-terminal-amber/80">TABLEAU RECAPITULATIF DES ACTIONS</h4>
+                            <pre className="whitespace-pre-wrap text-sm leading-relaxed">{step.actionsTable}</pre>
+                        </div>
                     </div>
                 ))}
             </AccordionSection>
