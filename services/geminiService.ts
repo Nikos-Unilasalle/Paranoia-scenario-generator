@@ -8,11 +8,20 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export async function generateScenarioIdeas(): Promise<string[]> {
+const langMap: { [key: string]: string } = {
+  en: 'English',
+  fr: 'French',
+  it: 'Italian',
+  es: 'Spanish',
+  de: 'German'
+};
+
+export async function generateScenarioIdeas(language: string): Promise<string[]> {
+  const targetLanguage = langMap[language] || 'English';
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Agis en tant qu'expert du jeu de rôle Paranoia. Génère 5 idées de scénarios courtes et percutantes pour Paranoia. Chaque idée doit être une seule phrase intrigante.`,
+      contents: `Act as an expert in the Paranoia RPG. Generate 5 short and punchy scenario ideas. Each idea must be a single intriguing sentence. The output language for the ideas MUST be ${targetLanguage}.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -21,7 +30,7 @@ export async function generateScenarioIdeas(): Promise<string[]> {
             ideas: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: "Une liste de 5 idées de scénario."
+              description: "A list of 5 scenario ideas."
             }
           }
         }
@@ -33,24 +42,29 @@ export async function generateScenarioIdeas(): Promise<string[]> {
     return data.ideas;
   } catch (error) {
     console.error("Error generating scenario ideas:", error);
-    throw new Error("Impossible de générer les idées de scénario.");
+    throw new Error("Could not generate scenario ideas.");
   }
 }
 
 
-export async function generateScenarioContent(selectedIdea: string, playerCount: number): Promise<ScenarioContent> {
+export async function generateScenarioContent(selectedIdea: string, playerCount: number, language: string): Promise<ScenarioContent> {
+  const targetLanguage = langMap[language] || 'English';
   const prompt = `
-    Agis en tant qu'expert du jeu de rôle Paranoia et maître du jeu expérimenté. En te basant sur l'idée de scénario suivante : "${selectedIdea}", génère un scénario complet, extrêmement détaillé et très long pour ${playerCount} joueurs.
-    Le ton doit être humoristique, absurde et plein de danger, typique de Paranoia.
-    Le résultat DOIT être un objet JSON valide. Ne fournis aucune explication ou texte en dehors de l'objet JSON.
-    Respecte les contraintes de contenu et de longueur suivantes :
-    - 'joueurs': Génère exactement ${playerCount} personnages joueurs.
-    - 'briefings': Génère un briefing individuel pour chaque personnage joueur. Chaque briefing doit contenir des rumeurs (vraies ou fausses) sur la mission, des PNJ, ou d'autres personnages joueurs.
-    - 'presentation': Rédige une présentation d'environ 500 mots pour le maître du jeu.
-    - 'etapes': Chaque 'description' dans les étapes doit être extrêmement détaillée, faisant environ 1000 mots. Chaque étape doit aussi inclure un 'actionsTable', qui est un tableau récapitulatif au format ASCII art. Ce tableau doit lister les actions possibles ou attendues, les indices à trouver et comment progresser.
-    - 'fiches': Génère au moins 8 fiches détaillées (200-300 mots chacune).
-    - 'indices': Génère au moins 6 indices substantiels.
-    - 'messagesOrdinateur': Génère au moins 8 messages de l'ordinateur.
+    Act as an expert Paranoia RPG game master. Based on the following scenario idea: "${selectedIdea}", generate a complete, extremely detailed, and very long scenario for ${playerCount} players.
+    The entire output, including all text fields in the JSON object, MUST be in ${targetLanguage}.
+    The tone must be humorous, absurd, and full of danger, typical of Paranoia.
+    The output MUST be a valid JSON object. Do not provide any explanation or text outside of the JSON object.
+
+    CRUCIAL LORE REMINDER: ALPHA Complex is NOT a communist state. It is a totalitarian, dystopian world run by a paranoid AI, The Computer. There is no democracy. Communism (and capitalism) are ideologies of secret societies and are considered high treason. The Computer is obsessed with eradicating traitors, mutants, and secret society members. Ensure the scenario reflects this tension and paranoia, not a simple caricature of communism.
+
+    Adhere to the following content and length constraints:
+    - 'joueurs': Generate exactly ${playerCount} player characters.
+    - 'briefings': Generate an individual briefing for each player character. Each briefing should contain rumors (true or false) about the mission, NPCs, or other player characters.
+    - 'presentation': Write a presentation of about 500 words for the game master.
+    - 'etapes': Each 'description' in the steps must be extremely detailed, making about 1000 words. Each step must also include an 'actionsTable', which is a summary table in Markdown format. This table should list possible or expected actions, clues to find, and how to progress.
+    - 'fiches': Generate at least 8 detailed cards (200-300 words each).
+    - 'indices': Generate at least 6 substantial clues.
+    - 'messagesOrdinateur': Generate at least 8 computer messages.
   `;
   
   try {
@@ -62,88 +76,88 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            titre: { type: Type.STRING, description: "Un titre accrocheur pour le scénario" },
-            presentation: { type: Type.STRING, description: "Résumé très détaillé d'environ 500 mots pour le maître du jeu uniquement." },
-            introduction: { type: Type.STRING, description: "Texte d'ambiance long et immersif à lire aux joueurs." },
+            titre: { type: Type.STRING, description: "A catchy title for the scenario." },
+            presentation: { type: Type.STRING, description: "A very detailed summary of about 500 words for the Game Master only." },
+            introduction: { type: Type.STRING, description: "A long and immersive flavor text to be read to the players." },
             joueurs: {
               type: Type.ARRAY,
-              description: `Une liste de ${playerCount} personnages joueurs avec des descriptions physiques et psychologiques très détaillées.`,
+              description: `A list of ${playerCount} player characters with highly detailed physical and psychological descriptions.`,
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  nom: { type: Type.STRING, description: "ex: ZAP-R-DED" },
-                  description: { type: Type.STRING, description: "Description physique et personnalité très détaillée (2-3 paragraphes)." },
-                  societeSecrete: { type: Type.STRING, description: "ex: Les Francs-Maçons Illuminés" },
-                  objectifSocieteSecrete: { type: Type.STRING, description: "Objectif secret détaillé lié à la société." },
-                  mutation: { type: Type.STRING, description: "ex: Pyrotechnie" },
-                  objectifPersonnel: { type: Type.STRING, description: "Un objectif secret personnel détaillé, souvent en conflit avec les autres." }
+                  nom: { type: Type.STRING, description: "e.g., ZAP-R-DED" },
+                  description: { type: Type.STRING, description: "Very detailed physical description and personality (2-3 paragraphs)." },
+                  societeSecrete: { type: Type.STRING, description: "e.g., The Enlightened Freemasons" },
+                  objectifSocieteSecrete: { type: Type.STRING, description: "A detailed secret objective related to the society." },
+                  mutation: { type: Type.STRING, description: "e.g., Pyrokinesis" },
+                  objectifPersonnel: { type: Type.STRING, description: "A detailed personal secret objective, often conflicting with others." }
                 },
                 required: ["nom", "description", "societeSecrete", "objectifSocieteSecrete", "mutation", "objectifPersonnel"]
               }
             },
             briefings: {
               type: Type.ARRAY,
-              description: "Un briefing individuel pour chaque joueur, contenant des rumeurs et des objectifs cachés.",
+              description: "An individual briefing for each player, containing rumors and hidden objectives.",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  pourJoueur: { type: Type.STRING, description: "Le nom du personnage joueur concerné par ce briefing." },
-                  contenu: { type: Type.STRING, description: "Le contenu du briefing secret pour ce joueur." }
+                  pourJoueur: { type: Type.STRING, description: "The name of the player character this briefing is for." },
+                  contenu: { type: Type.STRING, description: "The content of the secret briefing for this player." }
                 },
                 required: ["pourJoueur", "contenu"]
               }
             },
             etapes: {
               type: Type.ARRAY,
-              description: "5 à 7 étapes clés du scénario, chacune décrite en très grand détail (environ 1000 mots).",
+              description: "5 to 7 key stages of the scenario, each described in great detail (approx. 1000 words).",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  titre: { type: Type.STRING, description: "Titre de l'étape" },
-                  description: { type: Type.STRING, description: "Description très détaillée de ce qui se passe, des choix et des conséquences (environ 1000 mots)." },
-                  actionsTable: { type: Type.STRING, description: "Un tableau récapitulatif au format ASCII des actions possibles/attendues, indices et progression." }
+                  titre: { type: Type.STRING, description: "Title of the step." },
+                  description: { type: Type.STRING, description: "A very detailed description of what happens, choices, and consequences (approx. 1000 words)." },
+                  actionsTable: { type: Type.STRING, description: "A summary table in Markdown format of possible/expected actions, clues, and progression." }
                 },
                 required: ["titre", "description", "actionsTable"]
               }
             },
             fiches: {
               type: Type.ARRAY,
-              description: "Au moins 8 fiches détaillées (200-300 mots chacune) pour PNJ, lieux et objets importants.",
+              description: "At least 8 detailed info cards (200-300 words each) for important NPCs, locations, and items.",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  type: { type: Type.STRING, description: "PNJ, Lieu, ou Objet" },
+                  type: { type: Type.STRING, description: "PNJ (NPC), Lieu (Location), or Objet (Item)" },
                   nom: { type: Type.STRING },
-                  description: { type: Type.STRING, description: "Description complète et détaillée et rôle dans le scénario (plusieurs paragraphes)." }
+                  description: { type: Type.STRING, description: "A complete and detailed description and its role in the scenario (several paragraphs)." }
                 },
                 required: ["type", "nom", "description"]
               }
             },
             indices: {
               type: Type.ARRAY,
-              description: "Au moins 6 indices substantiels et détaillés à donner aux joueurs.",
+              description: "At least 6 substantial and detailed clues to give to the players.",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  titre: { type: Type.STRING, description: "ex: 'Message Intercepté'" },
-                  contenu: { type: Type.STRING, description: "Le contenu détaillé de l'indice." }
+                  titre: { type: Type.STRING, description: "e.g., 'Intercepted Message'" },
+                  contenu: { type: Type.STRING, description: "The detailed content of the clue." }
                 },
                 required: ["titre", "contenu"]
               }
             },
             messagesOrdinateur: {
               type: Type.ARRAY,
-              description: "Au moins 8 messages de l'Ordinateur (3 lignes, max 23 char/ligne, séparées par \\n)",
+              description: "At least 8 messages from The Computer (3 lines, max 23 char/line, separated by \\n).",
               items: { type: Type.STRING }
             },
             imagesPrompts: {
               type: Type.ARRAY,
-              description: "5 prompts pour générer des images. Chaque prompt doit se terminer par 'Style: semi-realistic digital painting, highly detailed, cinematic composition, dramatic lighting, intense sci-fi comic book art atmosphere.'",
+              description: "5 prompts for generating images. Each prompt must end with 'Style: semi-realistic digital painting, highly detailed, cinematic composition, dramatic lighting, intense sci-fi comic book art atmosphere.'",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  titre: { type: Type.STRING, description: "Le nom de l'image (ex: 'Le PNJ Technicien-BOB')" },
-                  prompt: { type: Type.STRING, description: "Un prompt détaillé pour un modèle de génération d'image, incluant une instruction de style stricte." }
+                  titre: { type: Type.STRING, description: "The name of the image (e.g., 'The NPC Technician-BOB')" },
+                  prompt: { type: Type.STRING, description: "A detailed prompt for an image generation model, including a strict style instruction." }
                 },
                 required: ["titre", "prompt"]
               }
@@ -159,7 +173,36 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
 
   } catch (error) {
     console.error("Error generating scenario content:", error);
-    throw new Error("Impossible de générer le contenu du scénario.");
+    throw new Error("Could not generate scenario content.");
+  }
+}
+
+export async function improveText(originalText: string, context: string, language: string): Promise<string> {
+  const targetLanguage = langMap[language] || 'English';
+
+  const prompt = `
+    You are an expert writer for the Paranoia RPG.
+    Your task is to rewrite and significantly expand the following text.
+    Make it more detailed, more immersive, and infused with the typical dark humor and constant danger of the Paranoia setting.
+    The text is the "${context}" part of a scenario.
+    The final output MUST be in ${targetLanguage}.
+
+    Original text to improve:
+    ---
+    ${originalText}
+    ---
+
+    Now, provide the new, improved, and much longer version of the text:`;
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-pro',
+      contents: prompt,
+    });
+    return response.text.trim();
+  } catch (error) {
+    console.error(`Error improving text for context "${context}":`, error);
+    throw new Error("Could not improve the text.");
   }
 }
 

@@ -30,6 +30,25 @@
         color: #FFB000;
         font-family: 'JetBrains Mono', monospace;
         font-size: 16px;
+        animation: flicker 15s linear infinite;
+      }
+      /* Scanlines overlay */
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+        background-size: 100% 4px;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      /* Glitch effect on the whole screen content */
+      #root {
+        animation: glitch 7s linear infinite;
       }
       h1, h2, h3, h4, h5, h6 {
         font-size: 1em;
@@ -51,6 +70,18 @@
         50% {
           color: #FFB000;
         }
+      }
+      @keyframes flicker {
+          0%, 96%, 100% { opacity: 1; }
+          97% { opacity: 0.98; }
+          98% { opacity: 1; }
+          99% { opacity: 0.95; }
+      }
+      @keyframes glitch {
+          0%, 98%, 100% { transform: translateX(0); }
+          98.5% { transform: translateX(3px); }
+          99% { transform: translateX(-3px); }
+          99.5% { transform: translateX(3px); }
       }
     </style>
   <script type="importmap">
