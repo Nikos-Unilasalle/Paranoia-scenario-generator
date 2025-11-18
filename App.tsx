@@ -61,6 +61,8 @@ const translations = {
         zipClues: "07_clues",
         zipComputer: "08_computer_messages",
         zipEndings: "09_endings",
+        enterTheme: "ENTER OPTIONAL MISSION THEMES (OR LEAVE EMPTY FOR RANDOM CHAOS):",
+        themePlaceholder: "e.g. Robot rebellion, Food shortage, Bureaucratic loop...",
     },
     fr: {
         languageName: "Français",
@@ -112,6 +114,8 @@ const translations = {
         zipClues: "07_indices",
         zipComputer: "08_messages_ordinateur",
         zipEndings: "09_fins_alternatives",
+        enterTheme: "ENTREZ DES THÈMES DE MISSION OPTIONNELS (OU LAISSEZ VIDE POUR LE CHAOS TOTAL) :",
+        themePlaceholder: "ex : Rébellion de robots, Pénurie alimentaire, Boucle bureaucratique...",
     },
     it: {
         languageName: "Italiano",
@@ -163,6 +167,8 @@ const translations = {
         zipClues: "07_indizi",
         zipComputer: "08_messaggi_computer",
         zipEndings: "09_finali_alternativi",
+        enterTheme: "INSERISCI TEMI OPZIONALI DELLA MISSIONE (O LASCIA VUOTO PER IL CAOS TOTALE):",
+        themePlaceholder: "es. Ribellione robot, Carenza cibo, Ciclo burocratico...",
     },
     es: {
         languageName: "Español",
@@ -214,6 +220,8 @@ const translations = {
         zipClues: "07_pistas",
         zipComputer: "08_mensajes_ordenador",
         zipEndings: "09_finales_alternativos",
+        enterTheme: "INTRODUCE TEMAS OPCIONALES DE LA MISIÓN (O DEJA VACÍO PARA EL CAOS TOTAL):",
+        themePlaceholder: "ej. Rebelión de robots, Escasez de alimentos, Bucle burocrático...",
     },
     de: {
         languageName: "Deutsch",
@@ -265,6 +273,8 @@ const translations = {
         zipClues: "07_hinweise",
         zipComputer: "08_computer_nachrichten",
         zipEndings: "09_alternative_enden",
+        enterTheme: "OPTIONALE MISSIONSTHEMEN EINGEBEN (ODER FÜR TOTALES CHAOS LEER LASSEN):",
+        themePlaceholder: "z.B. Roboter-Aufstand, Nahrungsmittelknappheit, Bürokratieschleife...",
     }
 };
 
@@ -287,6 +297,7 @@ const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [loadingMessage, setLoadingMessage] = useState<string>('');
     const [improvingSection, setImprovingSection] = useState<{ section: string; index?: number } | null>(null);
+    const [themeInput, setThemeInput] = useState<string>('');
 
     const t = translations[language];
 
@@ -298,14 +309,14 @@ const App: React.FC = () => {
         setSelectedIdea(null);
         setLoadingMessage(t.loadingIdeas);
         try {
-            const ideas = await generateScenarioIdeas(language);
+            const ideas = await generateScenarioIdeas(language, themeInput);
             setScenarioIdeas(ideas);
             setAppState('ideasReady');
         } catch (err) {
             setError(err instanceof Error ? err.message : t.unknownError);
             setAppState('error');
         }
-    }, [language, t]);
+    }, [language, themeInput, t]);
     
     const handleIdeaClick = useCallback((idea: string) => {
         setSelectedIdea(idea);
@@ -420,6 +431,7 @@ const App: React.FC = () => {
       setSelectedIdea(null);
       setGeneratedScenario(null);
       setError(null);
+      setThemeInput('');
     }, []);
 
     const handleDownloadZip = useCallback(async () => {
@@ -522,7 +534,17 @@ ${e.description}
 
                 <main className="mt-8">
                     {appState === 'idle' && (
-                        <div className="text-center">
+                        <div className="flex flex-col items-center gap-8">
+                             <div className="w-full max-w-xl">
+                                <label className="block mb-3 text-terminal-amber/90 text-center">{t.enterTheme}</label>
+                                <textarea
+                                    rows={2}
+                                    value={themeInput}
+                                    onChange={(e) => setThemeInput(e.target.value)}
+                                    placeholder={t.themePlaceholder}
+                                    className="w-full bg-black/50 border-2 border-terminal-amber/50 text-terminal-amber p-3 focus:outline-none focus:border-terminal-amber placeholder-terminal-amber/30 text-center resize-none"
+                                />
+                            </div>
                             <button
                                 onClick={handleGenerateIdeas}
                                 className="bg-transparent hover:bg-terminal-amber/10 text-terminal-amber py-3 px-6 border border-terminal-amber transition-colors duration-200 blinking-cursor"

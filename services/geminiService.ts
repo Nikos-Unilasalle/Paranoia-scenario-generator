@@ -16,12 +16,18 @@ const langMap: { [key: string]: string } = {
   de: 'German'
 };
 
-export async function generateScenarioIdeas(language: string): Promise<string[]> {
+export async function generateScenarioIdeas(language: string, theme?: string): Promise<string[]> {
   const targetLanguage = langMap[language] || 'English';
+  
+  let themeInstruction = "";
+  if (theme && theme.trim() !== "") {
+    themeInstruction = `The scenario ideas MUST be strictly based on the following theme(s): "${theme}".`;
+  }
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Act as an expert in the Paranoia RPG. Generate 5 short and punchy scenario ideas. Each idea must be a single intriguing sentence. The output language for the ideas MUST be ${targetLanguage}.`,
+      contents: `Act as an expert in the Paranoia RPG. Generate 5 short and punchy scenario ideas. Each idea must be a single intriguing sentence. ${themeInstruction} The output language for the ideas MUST be ${targetLanguage}.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
