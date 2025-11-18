@@ -64,7 +64,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
     CRUCIAL DESIGN RULES:
     1. **CRESCENDO OF PANIC:** The scenario must start with minor bureaucratic annoyances and escalate to total chaos, hallucinations, and explosions. The Computer must become increasingly oppressive and send contradictory orders.
     2. **CONFLICTING OBJECTIVES:** Player Secret Society/Personal objectives MUST collide. (e.g., Player A must destroy the device, Player B must steal it, Player C must eat it). Give them reasons to kill each other before the finale.
-    3. **NON-LINEARITY:** In the 'etapes' (steps), do not write a straight line. Include "Branching Paths" (If players do X, go to... If players do Y, go to...). Include "Blowback" (consequences of early failures returning later).
+    3. **DYNAMIC BRANCHING:** In the 'etapes' (steps), you MUST provide between 2 and 5 distinct options/courses of action for the players depending on the situation. Do not strictly stick to 2 options if the situation allows for more.
     4. **DISRUPTIVE NPCs:** NPCs are not just quest givers. They are obstacles. They try to frame players, steal their credits, or report them for treason.
     5. **ACTIONABLE CLUES:** Clues should not just be flavor text. They must implicate specific players or force dangerous binary choices.
 
@@ -72,7 +72,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
     - 'joueurs': Generate exactly ${playerCount} player characters with conflicting goals.
     - 'briefings': Generate an individual briefing for each player character.
     - 'presentation': Write a presentation of about 500 words for the game master.
-    - 'etapes': Each 'description' must be extremely detailed (approx 1000 words), explicitly mentioning branching paths and consequences.
+    - 'etapes': Each 'description' must be detailed (approx 500-800 words) setting the scene. Then provide an array of 2 to 5 'options' with specific consequences.
     - 'fiches': Generate at least 8 detailed cards (200-300 words each).
     - 'indices': Generate at least 6 substantial clues linked to decisions.
     - 'messagesOrdinateur': Generate at least 8 computer messages, some contradictory.
@@ -121,15 +121,28 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             etapes: {
               type: Type.ARRAY,
-              description: "5 to 7 key stages. Must include BRANCHING PATHS and CONSEQUENCES of actions.",
+              description: "5 to 7 key stages. Must include DYNAMIC BRANCHING PATHS.",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   titre: { type: Type.STRING, description: "Title of the step." },
-                  description: { type: Type.STRING, description: "Detailed description. Describe options: 'If they do A... If they do B...'. Describe blowback from previous steps." },
+                  description: { type: Type.STRING, description: "Detailed narrative setting the scene." },
+                  options: {
+                    type: Type.ARRAY,
+                    description: "A list of 2 to 5 distinct choices available to players.",
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                         label: { type: Type.STRING, description: "Short title of the option (e.g., 'Option A: Blast the door')" },
+                         action: { type: Type.STRING, description: "Description of the action." },
+                         consequence: { type: Type.STRING, description: "Immediate result and long-term consequence." }
+                      },
+                      required: ["label", "action", "consequence"]
+                    }
+                  },
                   actionsTable: { type: Type.STRING, description: "A summary table in Markdown format of possible/expected actions, clues, and progression." }
                 },
-                required: ["titre", "description", "actionsTable"]
+                required: ["titre", "description", "options", "actionsTable"]
               }
             },
             fiches: {

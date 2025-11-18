@@ -155,7 +155,18 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                             <LoadingSpinner message={t.improvingText} />
                         ) : (
                             <>
-                                <p className="mt-2">{step.description}</p>
+                                <p className="mt-2 whitespace-pre-wrap">{step.description}</p>
+                                {step.options && step.options.length > 0 && (
+                                    <div className="mt-6 space-y-4">
+                                        {step.options.map((option, optIndex) => (
+                                            <div key={optIndex} className="border-l-2 border-terminal-amber/50 pl-4 bg-terminal-amber/5 p-2">
+                                                <p className="font-bold text-terminal-amber">{option.label}</p>
+                                                <p className="text-sm mt-1 italic text-terminal-amber/80">{option.action}</p>
+                                                <p className="text-sm mt-2 text-terminal-amber/90">-> {option.consequence}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <ImproveButton section="etape" index={index} />
                             </>
                         )}

@@ -463,14 +463,23 @@ ${b.contenu}
         ).join("\n---\n\n");
         zip.file(`${currentT.zipBriefings}.md`, `# ${currentT.accordionBriefings}\n\n${briefingsText}`);
 
-        const etapesText = generatedScenario.etapes.map((etape, index) =>
-`## ${currentT.step.toUpperCase()} ${index + 1}: ${etape.titre}
+        const etapesText = generatedScenario.etapes.map((etape, index) => {
+            const optionsText = etape.options ? etape.options.map(opt => 
+`> **${opt.label}**
+> *${opt.action}*
+> -> ${opt.consequence}
+`).join("\n") : "";
+
+            return `## ${currentT.step.toUpperCase()} ${index + 1}: ${etape.titre}
 ${etape.description}
+
+### OPTIONS
+${optionsText}
 
 ### ${currentT.summaryTable}
 ${etape.actionsTable}
-`
-        ).join("\n---\n\n");
+`;
+        }).join("\n---\n\n");
         zip.file(`${currentT.zipSteps}.md`, `# ${currentT.accordionSteps}\n\n${etapesText}`);
 
         const fichesText = generatedScenario.fiches.map(fiche =>

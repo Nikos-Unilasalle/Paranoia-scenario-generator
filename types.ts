@@ -13,9 +13,16 @@ export interface Briefing {
   contenu: string;
 }
 
+export interface ScenarioOption {
+  label: string;
+  action: string;
+  consequence: string;
+}
+
 export interface ScenarioStep {
   titre: string;
   description: string;
+  options: ScenarioOption[];
   actionsTable: string;
 }
 
