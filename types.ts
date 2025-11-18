@@ -40,6 +40,12 @@ export interface GeneratedImage {
     url: string;
 }
 
+export interface Ending {
+  titre: string;
+  description: string;
+  condition: string;
+}
+
 export interface Scenario {
   titre: string;
   presentation: string;
@@ -50,6 +56,7 @@ export interface Scenario {
   fiches: InfoCard[];
   indices: Clue[];
   messagesOrdinateur: string[];
+  finsAlternatives: Ending[];
   images: GeneratedImage[];
 }
 
@@ -64,5 +71,6 @@ export interface ScenarioContent {
     fiches: InfoCard[];
     indices: Clue[];
     messagesOrdinateur: string[];
+    finsAlternatives: Ending[];
     imagesPrompts: ImagePrompt[];
 }

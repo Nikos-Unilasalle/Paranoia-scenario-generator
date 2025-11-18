@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import type { Scenario, PlayerCharacter, Briefing, ScenarioStep, InfoCard, Clue, GeneratedImage } from '../types';
+import type { Scenario, PlayerCharacter, Briefing, ScenarioStep, InfoCard, Clue, GeneratedImage, Ending } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 
 interface AccordionSectionProps {
@@ -60,6 +60,14 @@ const ClueCard: React.FC<{ clue: Clue, t: any }> = ({ clue, t }) => (
 const ComputerMessageCard: React.FC<{ message: string }> = ({ message }) => (
     <div className="p-4 border border-terminal-amber/30 mb-4 break-inside-avoid">
         <pre className="whitespace-pre-wrap">{message}</pre>
+    </div>
+);
+
+const EndingCard: React.FC<{ ending: Ending }> = ({ ending }) => (
+    <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid bg-terminal-amber/5">
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{ending.titre}</h4>
+        <p className="mt-2 mb-2 text-sm text-terminal-amber/70"><strong>Condition:</strong> {ending.condition}</p>
+        <p className="mt-2">{ending.description}</p>
     </div>
 );
 
@@ -176,6 +184,14 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                     {scenario.messagesOrdinateur.map((msg, index) => <ComputerMessageCard key={index} message={msg} />)}
                 </div>
             </AccordionSection>
+
+            {scenario.finsAlternatives && scenario.finsAlternatives.length > 0 && (
+                <AccordionSection title={t.accordionEndings} isOpen={openSection === t.accordionEndings} setIsOpen={() => toggleSection(t.accordionEndings)}>
+                    <div className="grid grid-cols-1 gap-4">
+                        {scenario.finsAlternatives.map((ending, index) => <EndingCard key={index} ending={ending} />)}
+                    </div>
+                </AccordionSection>
+            )}
 
             <AccordionSection title={t.accordionGallery} isOpen={openSection === t.accordionGallery} setIsOpen={() => toggleSection(t.accordionGallery)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -55,16 +55,22 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
     The tone must be humorous, absurd, and full of danger, typical of Paranoia.
     The output MUST be a valid JSON object. Do not provide any explanation or text outside of the JSON object.
 
-    CRUCIAL LORE REMINDER: ALPHA Complex is NOT a communist state. It is a totalitarian, dystopian world run by a paranoid AI, The Computer. There is no democracy. Communism (and capitalism) are ideologies of secret societies and are considered high treason. The Computer is obsessed with eradicating traitors, mutants, and secret society members. Ensure the scenario reflects this tension and paranoia, not a simple caricature of communism.
+    CRUCIAL DESIGN RULES:
+    1. **CRESCENDO OF PANIC:** The scenario must start with minor bureaucratic annoyances and escalate to total chaos, hallucinations, and explosions. The Computer must become increasingly oppressive and send contradictory orders.
+    2. **CONFLICTING OBJECTIVES:** Player Secret Society/Personal objectives MUST collide. (e.g., Player A must destroy the device, Player B must steal it, Player C must eat it). Give them reasons to kill each other before the finale.
+    3. **NON-LINEARITY:** In the 'etapes' (steps), do not write a straight line. Include "Branching Paths" (If players do X, go to... If players do Y, go to...). Include "Blowback" (consequences of early failures returning later).
+    4. **DISRUPTIVE NPCs:** NPCs are not just quest givers. They are obstacles. They try to frame players, steal their credits, or report them for treason.
+    5. **ACTIONABLE CLUES:** Clues should not just be flavor text. They must implicate specific players or force dangerous binary choices.
 
     Adhere to the following content and length constraints:
-    - 'joueurs': Generate exactly ${playerCount} player characters.
-    - 'briefings': Generate an individual briefing for each player character. Each briefing should contain rumors (true or false) about the mission, NPCs, or other player characters.
+    - 'joueurs': Generate exactly ${playerCount} player characters with conflicting goals.
+    - 'briefings': Generate an individual briefing for each player character.
     - 'presentation': Write a presentation of about 500 words for the game master.
-    - 'etapes': Each 'description' in the steps must be extremely detailed, making about 1000 words. Each step must also include an 'actionsTable', which is a summary table in Markdown format. This table should list possible or expected actions, clues to find, and how to progress.
+    - 'etapes': Each 'description' must be extremely detailed (approx 1000 words), explicitly mentioning branching paths and consequences.
     - 'fiches': Generate at least 8 detailed cards (200-300 words each).
-    - 'indices': Generate at least 6 substantial clues.
-    - 'messagesOrdinateur': Generate at least 8 computer messages.
+    - 'indices': Generate at least 6 substantial clues linked to decisions.
+    - 'messagesOrdinateur': Generate at least 8 computer messages, some contradictory.
+    - 'finsAlternatives': Generate 3 distinct, absurd endings based on player performance.
   `;
   
   try {
@@ -81,14 +87,14 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             introduction: { type: Type.STRING, description: "A long and immersive flavor text to be read to the players." },
             joueurs: {
               type: Type.ARRAY,
-              description: `A list of ${playerCount} player characters with highly detailed physical and psychological descriptions.`,
+              description: `A list of ${playerCount} player characters. ENSURE Secret Objectives conflict with each other to create PvP tension.`,
               items: {
                 type: Type.OBJECT,
                 properties: {
                   nom: { type: Type.STRING, description: "e.g., ZAP-R-DED" },
                   description: { type: Type.STRING, description: "Very detailed physical description and personality (2-3 paragraphs)." },
                   societeSecrete: { type: Type.STRING, description: "e.g., The Enlightened Freemasons" },
-                  objectifSocieteSecrete: { type: Type.STRING, description: "A detailed secret objective related to the society." },
+                  objectifSocieteSecrete: { type: Type.STRING, description: "A detailed secret objective. MUST conflict with other players." },
                   mutation: { type: Type.STRING, description: "e.g., Pyrokinesis" },
                   objectifPersonnel: { type: Type.STRING, description: "A detailed personal secret objective, often conflicting with others." }
                 },
@@ -109,12 +115,12 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             etapes: {
               type: Type.ARRAY,
-              description: "5 to 7 key stages of the scenario, each described in great detail (approx. 1000 words).",
+              description: "5 to 7 key stages. Must include BRANCHING PATHS and CONSEQUENCES of actions.",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   titre: { type: Type.STRING, description: "Title of the step." },
-                  description: { type: Type.STRING, description: "A very detailed description of what happens, choices, and consequences (approx. 1000 words)." },
+                  description: { type: Type.STRING, description: "Detailed description. Describe options: 'If they do A... If they do B...'. Describe blowback from previous steps." },
                   actionsTable: { type: Type.STRING, description: "A summary table in Markdown format of possible/expected actions, clues, and progression." }
                 },
                 required: ["titre", "description", "actionsTable"]
@@ -122,7 +128,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             fiches: {
               type: Type.ARRAY,
-              description: "At least 8 detailed info cards (200-300 words each) for important NPCs, locations, and items.",
+              description: "At least 8 detailed info cards. NPCs must be disruptive/manipulative.",
               items: {
                 type: Type.OBJECT,
                 properties: {
@@ -135,7 +141,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             indices: {
               type: Type.ARRAY,
-              description: "At least 6 substantial and detailed clues to give to the players.",
+              description: "At least 6 substantial clues. They must drive decisions or incriminate players.",
               items: {
                 type: Type.OBJECT,
                 properties: {
@@ -147,8 +153,21 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             messagesOrdinateur: {
               type: Type.ARRAY,
-              description: "At least 8 messages from The Computer (3 lines, max 23 char/line, separated by \\n).",
+              description: "At least 8 messages from The Computer. Include contradictory orders and oppressive praise.",
               items: { type: Type.STRING }
+            },
+            finsAlternatives: {
+              type: Type.ARRAY,
+              description: "3 different possible endings based on player choices/success.",
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  titre: { type: Type.STRING, description: "Title of the ending (e.g., 'Total Party Kill', 'Bureaucratic Nightmare')." },
+                  condition: { type: Type.STRING, description: "What leads to this ending." },
+                  description: { type: Type.STRING, description: "Description of the finale." }
+                },
+                required: ["titre", "condition", "description"]
+              }
             },
             imagesPrompts: {
               type: Type.ARRAY,
@@ -163,7 +182,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
               }
             }
           },
-          required: ["titre", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "imagesPrompts"]
+          required: ["titre", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "finsAlternatives", "imagesPrompts"]
         }
       }
     });

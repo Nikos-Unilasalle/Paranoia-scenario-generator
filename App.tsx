@@ -42,6 +42,7 @@ const translations = {
         accordionInfoCards: "Info Cards (NPCs, Locations, Items)",
         accordionClues: "Clues",
         accordionComputer: "Computer Messages",
+        accordionEndings: "Alternative Endings",
         accordionGallery: "Image Gallery",
         step: "Step",
         summaryTable: "Summary Table",
@@ -59,6 +60,7 @@ const translations = {
         zipInfoCards: "06_info_cards",
         zipClues: "07_clues",
         zipComputer: "08_computer_messages",
+        zipEndings: "09_endings",
     },
     fr: {
         languageName: "Français",
@@ -91,6 +93,7 @@ const translations = {
         accordionInfoCards: "Fiches (PNJ, Lieux, Objets)",
         accordionClues: "Indices",
         accordionComputer: "Messages de l'Ordinateur",
+        accordionEndings: "Fins Alternatives",
         accordionGallery: "Galerie d'Images",
         step: "Étape",
         summaryTable: "Tableau Récapitulatif",
@@ -108,6 +111,7 @@ const translations = {
         zipInfoCards: "06_fiches",
         zipClues: "07_indices",
         zipComputer: "08_messages_ordinateur",
+        zipEndings: "09_fins_alternatives",
     },
     it: {
         languageName: "Italiano",
@@ -140,6 +144,7 @@ const translations = {
         accordionInfoCards: "Schede (PNG, Luoghi, Oggetti)",
         accordionClues: "Indizi",
         accordionComputer: "Messaggi del Computer",
+        accordionEndings: "Finali Alternativi",
         accordionGallery: "Galleria Immagini",
         step: "Fase",
         summaryTable: "Tabella Riassuntiva",
@@ -157,6 +162,7 @@ const translations = {
         zipInfoCards: "06_schede",
         zipClues: "07_indizi",
         zipComputer: "08_messaggi_computer",
+        zipEndings: "09_finali_alternativi",
     },
     es: {
         languageName: "Español",
@@ -189,6 +195,7 @@ const translations = {
         accordionInfoCards: "Fichas (PNJs, Lugares, Objetos)",
         accordionClues: "Pistas",
         accordionComputer: "Mensajes del Ordenador",
+        accordionEndings: "Finales Alternativos",
         accordionGallery: "Galería de Imágenes",
         step: "Paso",
         summaryTable: "Tabla Resumen",
@@ -206,6 +213,7 @@ const translations = {
         zipInfoCards: "06_fichas",
         zipClues: "07_pistas",
         zipComputer: "08_mensajes_ordenador",
+        zipEndings: "09_finales_alternativos",
     },
     de: {
         languageName: "Deutsch",
@@ -238,6 +246,7 @@ const translations = {
         accordionInfoCards: "Infokarten (NSCs, Orte, Gegenstände)",
         accordionClues: "Hinweise",
         accordionComputer: "Computer-Nachrichten",
+        accordionEndings: "Alternative Enden",
         accordionGallery: "Bildergalerie",
         step: "Schritt",
         summaryTable: "Zusammenfassungstabelle",
@@ -255,6 +264,7 @@ const translations = {
         zipInfoCards: "06_infokarten",
         zipClues: "07_hinweise",
         zipComputer: "08_computer_nachrichten",
+        zipEndings: "09_alternative_enden",
     }
 };
 
@@ -472,6 +482,17 @@ ${msg}
 `
         ).join("\n");
         zip.file(`${currentT.zipComputer}.md`, `# ${currentT.accordionComputer}\n\n${messagesText}`);
+        
+        if (generatedScenario.finsAlternatives && generatedScenario.finsAlternatives.length > 0) {
+            const endingsText = generatedScenario.finsAlternatives.map(e =>
+`## ${e.titre}
+**Condition:** ${e.condition}
+
+${e.description}
+`
+            ).join("\n---\n\n");
+            zip.file(`${currentT.zipEndings}.md`, `# ${currentT.accordionEndings}\n\n${endingsText}`);
+        }
 
         const imgFolder = zip.folder("images");
         if (imgFolder) {
