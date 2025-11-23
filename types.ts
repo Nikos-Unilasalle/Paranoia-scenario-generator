@@ -37,16 +37,6 @@ export interface Clue {
   contenu: string;
 }
 
-export interface ImagePrompt {
-    titre: string;
-    prompt: string;
-}
-
-export interface GeneratedImage {
-    titre: string;
-    url: string;
-}
-
 export interface Ending {
   titre: string;
   description: string;
@@ -55,6 +45,8 @@ export interface Ending {
 
 export interface Scenario {
   titre: string;
+  pitch: string;
+  coverImage: string;
   presentation: string;
   introduction: string;
   joueurs: PlayerCharacter[];
@@ -64,12 +56,12 @@ export interface Scenario {
   indices: Clue[];
   messagesOrdinateur: string[];
   finsAlternatives: Ending[];
-  images: GeneratedImage[];
 }
 
 // Type for the initial JSON response before image generation
 export interface ScenarioContent {
     titre: string;
+    pitch: string;
     presentation: string;
     introduction: string;
     joueurs: PlayerCharacter[];
@@ -79,5 +71,5 @@ export interface ScenarioContent {
     indices: Clue[];
     messagesOrdinateur: string[];
     finsAlternatives: Ending[];
-    imagesPrompts: ImagePrompt[];
+    imagePrompt: string;
 }

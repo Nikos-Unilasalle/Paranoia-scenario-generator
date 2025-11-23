@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import type { ScenarioContent, ImagePrompt } from '../types';
+import type { ScenarioContent } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable is not set");
@@ -74,6 +74,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
     3. **DYNAMIC BRANCHING:** In the 'etapes' (steps), you MUST provide between 2 and 5 distinct options/courses of action for the players depending on the situation. Do not strictly stick to 2 options if the situation allows for more.
     4. **DISRUPTIVE NPCs:** NPCs are not just quest givers. They are obstacles. They try to frame players, steal their credits, or report them for treason.
     5. **ACTIONABLE CLUES:** Clues should not just be flavor text. They must implicate specific players or force dangerous binary choices.
+    6. **PITCH & COVER:** You must generate a short "Pitch" (1-2 sentences) summarizing the mission, and a detailed prompt for a Cover Image.
 
     Adhere to the following content and length constraints:
     - 'joueurs': Generate exactly ${playerCount} player characters with conflicting goals.
@@ -96,6 +97,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
           type: Type.OBJECT,
           properties: {
             titre: { type: Type.STRING, description: "A catchy title for the scenario." },
+            pitch: { type: Type.STRING, description: "A very short, catchy summary (1-2 sentences) of the mission, suitable for a back-of-the-book blurb." },
             presentation: { type: Type.STRING, description: "A very detailed summary of about 500 words for the Game Master only." },
             introduction: { type: Type.STRING, description: "A long and immersive flavor text to be read to the players." },
             joueurs: {
@@ -195,20 +197,12 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
                 required: ["titre", "condition", "description"]
               }
             },
-            imagesPrompts: {
-              type: Type.ARRAY,
-              description: "5 prompts for generating images. IMPORTANT: Prompts must be PG-13. Do NOT use words like 'demonic', 'torture', 'gore', 'blood', 'suicide', 'sinister', or 'menacing' as they trigger safety filters. Use 'menacing', 'broken', 'red fluid', 'termination', 'unsettling' instead. Each prompt must end with 'Style: Detailed digital comic book art style, retro sci-fi / dieselpunk aesthetic from the 90's. Detailed grungy industrial sci-fi environnement. Thick, clean linework with distinct outlines. Muted, earthy color palette: olive greens, rusted browns, metallic beige dominating the environment. Dramatic volumetric lighting with deep shadows. Strong emissive light sources: glowing green energy, vibrant purple plasma discharge with a shimmering, static effect. Dynamic action poses for characters. Characters are semi-realistic. Detailed environmental elements: scattered debris, visible cables and conduits, worn-out machinery, broken panels. Atmospheric, dystopian feel.'",
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  titre: { type: Type.STRING, description: "The name of the image (e.g., 'The NPC Technician-BOB')" },
-                  prompt: { type: Type.STRING, description: "A detailed prompt for an image generation model, including a strict style instruction." }
-                },
-                required: ["titre", "prompt"]
-              }
+            imagePrompt: {
+              type: Type.STRING,
+              description: "A single, highly detailed prompt for the main cover image of the scenario. IMPORTANT: Prompts must be PG-13. Do NOT use words like 'demonic', 'torture', 'gore', 'blood', 'suicide', 'sinister', or 'menacing'. Use 'unsettling', 'broken', 'red fluid', 'termination' instead. The prompt MUST end with: 'Style: Detailed digital comic book art style, retro sci-fi / dieselpunk aesthetic from the 90's. Detailed grungy industrial sci-fi environnement. Thick, clean linework with distinct outlines. Muted, earthy color palette: olive greens, rusted browns, metallic beige dominating the environment. Dramatic volumetric lighting with deep shadows. Strong emissive light sources: glowing green energy, vibrant purple plasma discharge with a shimmering, static effect. Dynamic action poses for characters. Characters are semi-realistic. Detailed environmental elements: scattered debris, visible cables and conduits, worn-out machinery, broken panels. Atmospheric, dystopian feel.'"
             }
           },
-          required: ["titre", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "finsAlternatives", "imagesPrompts"]
+          required: ["titre", "pitch", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "finsAlternatives", "imagePrompt"]
         }
       }
     });

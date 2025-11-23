@@ -43,7 +43,6 @@ const translations = {
         accordionClues: "Clues",
         accordionComputer: "Computer Messages",
         accordionEndings: "Alternative Endings",
-        accordionGallery: "Image Gallery",
         step: "Step",
         summaryTable: "Summary Table",
         for: "For",
@@ -96,7 +95,6 @@ const translations = {
         accordionClues: "Indices",
         accordionComputer: "Messages de l'Ordinateur",
         accordionEndings: "Fins Alternatives",
-        accordionGallery: "Galerie d'Images",
         step: "Étape",
         summaryTable: "Tableau Récapitulatif",
         for: "Pour",
@@ -149,7 +147,6 @@ const translations = {
         accordionClues: "Indizi",
         accordionComputer: "Messaggi del Computer",
         accordionEndings: "Finali Alternativi",
-        accordionGallery: "Galleria Immagini",
         step: "Fase",
         summaryTable: "Tabella Riassuntiva",
         for: "Per",
@@ -202,7 +199,6 @@ const translations = {
         accordionClues: "Pistas",
         accordionComputer: "Mensajes del Ordenador",
         accordionEndings: "Finales Alternativos",
-        accordionGallery: "Galería de Imágenes",
         step: "Paso",
         summaryTable: "Tabla Resumen",
         for: "Para",
@@ -255,7 +251,6 @@ const translations = {
         accordionClues: "Hinweise",
         accordionComputer: "Computer-Nachrichten",
         accordionEndings: "Alternative Enden",
-        accordionGallery: "Bildergalerie",
         step: "Schritt",
         summaryTable: "Zusammenfassungstabelle",
         for: "Für",
@@ -298,6 +293,7 @@ const App: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState<string>('');
     const [improvingSection, setImprovingSection] = useState<{ section: string; index?: number } | null>(null);
     const [themeInput, setThemeInput] = useState<string>('');
+    const [playerCount, setPlayerCount] = useState<number>(4);
 
     const t = translations[language];
 
@@ -328,30 +324,30 @@ const App: React.FC = () => {
         setAppState('selectingPlayerCount');
     }, []);
 
-    const handleGenerateScenario = useCallback(async (playerCount: number) => {
+    const handleGenerateScenario = useCallback(async (count: number) => {
         if (!selectedIdea) return;
-        
+        setPlayerCount(count);
         setAppState('loadingScenario');
         setError(null);
         
         const currentT = translations[language]; // Use translations for the selected language
         try {
             setLoadingMessage(currentT.loadingScenario);
-            const scenarioContent: ScenarioContent = await generateScenarioContent(selectedIdea, playerCount, language);
+            const scenarioContent: ScenarioContent = await generateScenarioContent(selectedIdea, count, language);
 
-            setLoadingMessage(`${currentT.generatingVisuals} (0/${scenarioContent.imagesPrompts.length})`);
-            const imagePromises = scenarioContent.imagesPrompts.map((imgPrompt, index) => 
-                generateImage(imgPrompt.prompt).then(url => {
-                    setLoadingMessage(`${currentT.generatingVisuals} (${index + 1}/${scenarioContent.imagesPrompts.length})`);
-                    return { titre: imgPrompt.titre, url };
-                })
-            );
-
-            const generatedImages = await Promise.all(imagePromises);
+            setLoadingMessage(currentT.generatingVisuals);
+            let coverImageUrl = '';
+            try {
+                coverImageUrl = await generateImage(scenarioContent.imagePrompt);
+            } catch (imgError) {
+                console.error("Cover image generation failed", imgError);
+                // Fallback image handled in service, but just in case
+                coverImageUrl = "https://via.placeholder.com/1024x576.png/0A0A0A/FFB000?text=IMAGE+GENERATION+FAILED";
+            }
 
             const fullScenario: Scenario = {
                 ...scenarioContent,
-                images: generatedImages,
+                coverImage: coverImageUrl,
             };
 
             setGeneratedScenario(fullScenario);
@@ -442,7 +438,7 @@ const App: React.FC = () => {
         
         const currentT = translations[language];
 
-        zip.file(`${currentT.zipPresentation}.md`, `# ${currentT.accordionPresentation}\n\n${generatedScenario.presentation}`);
+        zip.file(`${currentT.zipPresentation}.md`, `# ${generatedScenario.titre}\n\n> *${generatedScenario.pitch}*\n\n# ${currentT.accordionPresentation}\n\n${generatedScenario.presentation}`);
         zip.file(`${currentT.zipIntroduction}.md`, `# ${currentT.accordionIntro}\n\n${generatedScenario.introduction}`);
 
         const joueursText = generatedScenario.joueurs.map(pc =>
@@ -515,15 +511,11 @@ ${e.description}
             zip.file(`${currentT.zipEndings}.md`, `# ${currentT.accordionEndings}\n\n${endingsText}`);
         }
 
-        const imgFolder = zip.folder("images");
-        if (imgFolder) {
-            generatedScenario.images.forEach((image, index) => {
-                const base64Data = image.url.split(';base64,').pop();
-                if (base64Data) {
-                    const filename = `${String(index + 1).padStart(2, '0')}_${sanitizeFilename(image.titre)}.jpeg`;
-                    imgFolder.file(filename, base64Data, { base64: true });
-                }
-            });
+        if (generatedScenario.coverImage) {
+            const base64Data = generatedScenario.coverImage.split(';base64,').pop();
+            if (base64Data) {
+                zip.file(`cover.jpeg`, base64Data, { base64: true });
+            }
         }
 
         const content = await zip.generateAsync({ type: "blob" });
@@ -648,7 +640,7 @@ ${e.description}
                     
                     {appState === 'scenarioReady' && generatedScenario && (
                         <>
-                            <ScenarioDisplay scenario={generatedScenario} handleImproveText={handleImproveText} improvingSection={improvingSection} t={t} />
+                            <ScenarioDisplay scenario={generatedScenario} handleImproveText={handleImproveText} improvingSection={improvingSection} t={t} playerCount={playerCount} />
                             <div className="text-center mt-12 flex flex-col md:flex-row justify-center gap-4">
                                 <button
                                     onClick={handleDownloadZip}

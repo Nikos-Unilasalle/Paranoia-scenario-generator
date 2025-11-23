@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import type { Scenario, PlayerCharacter, Briefing, ScenarioStep, InfoCard, Clue, GeneratedImage, Ending } from '../types';
+import type { Scenario, PlayerCharacter, Briefing, ScenarioStep, InfoCard, Clue, Ending } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 
 interface AccordionSectionProps {
@@ -17,7 +17,7 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({ title, children, is
       className="w-full text-left p-2 bg-terminal-amber/10 hover:bg-terminal-amber/20 transition-colors duration-200"
     >
       <div className="flex justify-between items-center">
-        <h3>{isOpen ? '[-]' : '[+]'} {title}</h3>
+        <h3 className="uppercase">{isOpen ? '[-]' : '[+]'} {title}</h3>
       </div>
     </button>
     {isOpen && <div className="p-4 text-terminal-amber/90 whitespace-pre-wrap">{children}</div>}
@@ -26,18 +26,18 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({ title, children, is
 
 const PlayerCharacterCard: React.FC<{ pc: PlayerCharacter }> = ({ pc }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid">
-        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{pc.nom}</h4>
-        <p className="mt-2"><strong>Description:</strong> {pc.description}</p>
-        <p className="mt-2"><strong>Mutation:</strong> {pc.mutation}</p>
-        <p className="mt-2"><strong>Société Secrète:</strong> {pc.societeSecrete}</p>
-        <p className="mt-2"><strong>Objectif (Société):</strong> {pc.objectifSocieteSecrete}</p>
-        <p className="mt-2"><strong>Objectif (Personnel):</strong> {pc.objectifPersonnel}</p>
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{pc.nom}</h4>
+        <p className="mt-2"><u>Description:</u> {pc.description}</p>
+        <p className="mt-2"><u>Mutation:</u> {pc.mutation}</p>
+        <p className="mt-2"><u>Société Secrète:</u> {pc.societeSecrete}</p>
+        <p className="mt-2"><u>Objectif (Société):</u> {pc.objectifSocieteSecrete}</p>
+        <p className="mt-2"><u>Objectif (Personnel):</u> {pc.objectifPersonnel}</p>
     </div>
 );
 
 const BriefingCard: React.FC<{ briefing: Briefing, t: any }> = ({ briefing, t }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid">
-        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{t.for.toUpperCase()}: {briefing.pourJoueur}</h4>
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{t.for.toUpperCase()}: {briefing.pourJoueur}</h4>
         <p className="whitespace-pre-wrap mt-2">{briefing.contenu}</p>
     </div>
 );
@@ -45,38 +45,29 @@ const BriefingCard: React.FC<{ briefing: Briefing, t: any }> = ({ briefing, t })
 
 const InfoDisplayCard: React.FC<{ card: InfoCard, t: any }> = ({ card, t }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid">
-         <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{t.infoCard.toUpperCase()}: {card.nom} [{card.type}]</h4>
+         <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{t.infoCard.toUpperCase()}: {card.nom} [{card.type}]</h4>
         <p className="mt-2">{card.description}</p>
     </div>
 );
 
 const ClueCard: React.FC<{ clue: Clue, t: any }> = ({ clue, t }) => (
     <div className="border-2 border-dashed border-terminal-amber/50 p-4 mb-4 break-inside-avoid">
-        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{t.clue.toUpperCase()}: {clue.titre}</h4>
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{t.clue.toUpperCase()}: {clue.titre}</h4>
         <p className="whitespace-pre-wrap mt-2">{clue.contenu}</p>
     </div>
 );
 
 const ComputerMessageCard: React.FC<{ message: string }> = ({ message }) => (
     <div className="p-4 border border-terminal-amber/30 mb-4 break-inside-avoid">
-        <pre className="whitespace-pre-wrap">{message}</pre>
+        <pre className="whitespace-pre-wrap font-mono">{message}</pre>
     </div>
 );
 
 const EndingCard: React.FC<{ ending: Ending }> = ({ ending }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid bg-terminal-amber/5">
-        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2">{ending.titre}</h4>
-        <p className="mt-2 mb-2 text-sm text-terminal-amber/70"><strong>Condition:</strong> {ending.condition}</p>
+        <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{ending.titre}</h4>
+        <p className="mt-2 mb-2 text-terminal-amber/70"><u>Condition:</u> {ending.condition}</p>
         <p className="mt-2">{ending.description}</p>
-    </div>
-);
-
-const ImageCard: React.FC<{ image: GeneratedImage }> = ({ image }) => (
-    <div className="border border-terminal-amber/30 mb-4 break-inside-avoid">
-        <img src={image.url} alt={image.titre} className="w-full h-auto object-cover" />
-        <div className="p-2 border-t border-terminal-amber/30">
-            <h4 className="text-center">{image.titre}</h4>
-        </div>
     </div>
 );
 
@@ -86,9 +77,10 @@ interface ScenarioDisplayProps {
   handleImproveText: (section: string, index?: number) => void;
   improvingSection: { section: string; index?: number } | null;
   t: any; // Translation object
+  playerCount: number;
 }
 
-const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImproveText, improvingSection, t }) => {
+const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImproveText, improvingSection, t, playerCount }) => {
     const [openSection, setOpenSection] = useState<string | null>(t.accordionIntro);
 
     const toggleSection = useCallback((title: string) => {
@@ -100,7 +92,7 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
             <button
                 onClick={() => handleImproveText(section, index)}
                 disabled={!!improvingSection}
-                className="bg-transparent hover:bg-terminal-amber/10 text-terminal-amber/80 text-sm py-1 px-3 border border-terminal-amber/30 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-transparent hover:bg-terminal-amber/10 text-terminal-amber/80 py-1 px-3 border border-terminal-amber/30 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed uppercase"
             >
                 [ {t.improveButton} ]
             </button>
@@ -109,8 +101,29 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
 
     return (
         <div className="w-full">
-            <div className="border-2 border-terminal-amber p-2 text-center mb-8">
-                <h1>{scenario.titre}</h1>
+            {/* Cover Section - Terminal Style */}
+            <div className="mb-12 border-2 border-terminal-amber p-4 bg-black relative">
+                <div className="border-b-2 border-terminal-amber pb-4 mb-4 text-center">
+                    <h1 className="uppercase tracking-widest text-terminal-amber">
+                        // {scenario.titre} //
+                    </h1>
+                </div>
+
+                {scenario.coverImage && (
+                    <div className="w-full mb-4 border border-terminal-amber p-1">
+                         <img src={scenario.coverImage} alt={scenario.titre} className="w-full h-auto opacity-90" />
+                    </div>
+                )}
+                
+                <div className="border-l-2 border-terminal-amber pl-4 py-2 mb-4">
+                    <p className="uppercase mb-2 text-terminal-amber/70">[ MISSION_BRIEFING_SUMMARY ]</p>
+                    <p>{scenario.pitch}</p>
+                </div>
+                
+                <div className="border-t-2 border-terminal-amber pt-4 text-center uppercase">
+                    <span className="mr-4">[ TROUBLESHOOTERS: {playerCount} ]</span>
+                    <span>[ CLEARANCE: MANDATORY ]</span>
+                </div>
             </div>
 
             <AccordionSection title={t.accordionPresentation} isOpen={openSection === t.accordionPresentation} setIsOpen={() => toggleSection(t.accordionPresentation)}>
@@ -150,7 +163,7 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
             <AccordionSection title={t.accordionSteps} isOpen={openSection === t.accordionSteps} setIsOpen={() => toggleSection(t.accordionSteps)}>
                  {scenario.etapes.map((step, index) => (
                     <div key={index} className="mb-8 border-b border-terminal-amber/20 pb-4">
-                        <h3 className="underline">{t.step.toUpperCase()} {index + 1}: {step.titre}</h3>
+                        <h3 className="underline uppercase">{t.step.toUpperCase()} {index + 1}: {step.titre}</h3>
                         {improvingSection?.section === 'etape' && improvingSection?.index === index ? (
                             <LoadingSpinner message={t.improvingText} />
                         ) : (
@@ -160,9 +173,9 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                                     <div className="mt-6 space-y-4">
                                         {step.options.map((option, optIndex) => (
                                             <div key={optIndex} className="border-l-2 border-terminal-amber/50 pl-4 bg-terminal-amber/5 p-2">
-                                                <p className="font-bold text-terminal-amber">{option.label}</p>
-                                                <p className="text-sm mt-1 italic text-terminal-amber/80">{option.action}</p>
-                                                <p className="text-sm mt-2 text-terminal-amber/90">-> {option.consequence}</p>
+                                                <p className="uppercase text-terminal-amber">{option.label}</p>
+                                                <p className="mt-1 italic text-terminal-amber/80">{option.action}</p>
+                                                <p className="mt-2 text-terminal-amber/90">-> {option.consequence}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -171,8 +184,8 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                             </>
                         )}
                         <div className="mt-4 p-4 border border-terminal-amber/30 bg-black/50">
-                            <h4 className="mb-2 text-terminal-amber/80">{t.summaryTable.toUpperCase()} (MARKDOWN)</h4>
-                            <pre className="whitespace-pre-wrap text-sm leading-relaxed">{step.actionsTable}</pre>
+                            <h4 className="mb-2 text-terminal-amber/80 uppercase">{t.summaryTable.toUpperCase()} (MARKDOWN)</h4>
+                            <pre className="whitespace-pre-wrap leading-relaxed">{step.actionsTable}</pre>
                         </div>
                     </div>
                 ))}
@@ -203,12 +216,6 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                     </div>
                 </AccordionSection>
             )}
-
-            <AccordionSection title={t.accordionGallery} isOpen={openSection === t.accordionGallery} setIsOpen={() => toggleSection(t.accordionGallery)}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {scenario.images.map((img, index) => <ImageCard key={index} image={img} />)}
-                </div>
-            </AccordionSection>
         </div>
     );
 };
