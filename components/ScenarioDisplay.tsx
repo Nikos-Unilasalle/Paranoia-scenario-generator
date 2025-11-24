@@ -57,12 +57,6 @@ const ClueCard: React.FC<{ clue: Clue, t: any }> = ({ clue, t }) => (
     </div>
 );
 
-const ComputerMessageCard: React.FC<{ message: string }> = ({ message }) => (
-    <div className="p-4 border border-terminal-amber/30 mb-4 break-inside-avoid">
-        <pre className="whitespace-pre-wrap font-mono">{message}</pre>
-    </div>
-);
-
 const EndingCard: React.FC<{ ending: Ending }> = ({ ending }) => (
     <div className="border border-terminal-amber/30 p-4 mb-4 break-inside-avoid bg-terminal-amber/5">
         <h4 className="border-b border-terminal-amber/30 pb-2 mb-2 uppercase">{ending.titre}</h4>
@@ -203,12 +197,6 @@ const ScenarioDisplay: React.FC<ScenarioDisplayProps> = ({ scenario, handleImpro
                 </div>
             </AccordionSection>
             
-            <AccordionSection title={t.accordionComputer} isOpen={openSection === t.accordionComputer} setIsOpen={() => toggleSection(t.accordionComputer)}>
-                <div className="md:columns-2 lg:columns-3 gap-4">
-                    {scenario.messagesOrdinateur.map((msg, index) => <ComputerMessageCard key={index} message={msg} />)}
-                </div>
-            </AccordionSection>
-
             {scenario.finsAlternatives && scenario.finsAlternatives.length > 0 && (
                 <AccordionSection title={t.accordionEndings} isOpen={openSection === t.accordionEndings} setIsOpen={() => toggleSection(t.accordionEndings)}>
                     <div className="grid grid-cols-1 gap-4">

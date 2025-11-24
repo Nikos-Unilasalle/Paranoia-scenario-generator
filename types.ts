@@ -54,7 +54,6 @@ export interface Scenario {
   etapes: ScenarioStep[];
   fiches: InfoCard[];
   indices: Clue[];
-  messagesOrdinateur: string[];
   finsAlternatives: Ending[];
 }
 
@@ -69,7 +68,6 @@ export interface ScenarioContent {
     etapes: ScenarioStep[];
     fiches: InfoCard[];
     indices: Clue[];
-    messagesOrdinateur: string[];
     finsAlternatives: Ending[];
     imagePrompt: string;
 }

@@ -41,7 +41,6 @@ const translations = {
         accordionSteps: "Scenario Steps",
         accordionInfoCards: "Info Cards (NPCs, Locations, Items)",
         accordionClues: "Clues",
-        accordionComputer: "Computer Messages",
         accordionEndings: "Alternative Endings",
         step: "Step",
         summaryTable: "Summary Table",
@@ -58,7 +57,6 @@ const translations = {
         zipSteps: "05_scenario_steps",
         zipInfoCards: "06_info_cards",
         zipClues: "07_clues",
-        zipComputer: "08_computer_messages",
         zipEndings: "09_endings",
         enterTheme: "ENTER OPTIONAL MISSION THEMES (OR LEAVE EMPTY FOR RANDOM CHAOS):",
         themePlaceholder: "e.g. Robot rebellion, Food shortage, Bureaucratic loop...",
@@ -93,7 +91,6 @@ const translations = {
         accordionSteps: "Étapes du Scénario",
         accordionInfoCards: "Fiches (PNJ, Lieux, Objets)",
         accordionClues: "Indices",
-        accordionComputer: "Messages de l'Ordinateur",
         accordionEndings: "Fins Alternatives",
         step: "Étape",
         summaryTable: "Tableau Récapitulatif",
@@ -110,7 +107,6 @@ const translations = {
         zipSteps: "05_etapes_scenario",
         zipInfoCards: "06_fiches",
         zipClues: "07_indices",
-        zipComputer: "08_messages_ordinateur",
         zipEndings: "09_fins_alternatives",
         enterTheme: "ENTREZ DES THÈMES DE MISSION OPTIONNELS (OU LAISSEZ VIDE POUR LE CHAOS TOTAL) :",
         themePlaceholder: "ex : Rébellion de robots, Pénurie alimentaire, Boucle bureaucratique...",
@@ -145,7 +141,6 @@ const translations = {
         accordionSteps: "Fasi dello Scenario",
         accordionInfoCards: "Schede (PNG, Luoghi, Oggetti)",
         accordionClues: "Indizi",
-        accordionComputer: "Messaggi del Computer",
         accordionEndings: "Finali Alternativi",
         step: "Fase",
         summaryTable: "Tabella Riassuntiva",
@@ -162,7 +157,6 @@ const translations = {
         zipSteps: "05_fasi_scenario",
         zipInfoCards: "06_schede",
         zipClues: "07_indizi",
-        zipComputer: "08_messaggi_computer",
         zipEndings: "09_finali_alternativi",
         enterTheme: "INSERISCI TEMI OPZIONALI DELLA MISSIONE (O LASCIA VUOTO PER IL CAOS TOTALE):",
         themePlaceholder: "es. Ribellione robot, Carenza cibo, Ciclo burocratico...",
@@ -197,7 +191,6 @@ const translations = {
         accordionSteps: "Pasos del Escenario",
         accordionInfoCards: "Fichas (PNJs, Lugares, Objetos)",
         accordionClues: "Pistas",
-        accordionComputer: "Mensajes del Ordenador",
         accordionEndings: "Finales Alternativos",
         step: "Paso",
         summaryTable: "Tabla Resumen",
@@ -214,8 +207,7 @@ const translations = {
         zipSteps: "05_pasos_escenario",
         zipInfoCards: "06_fichas",
         zipClues: "07_pistas",
-        zipComputer: "08_mensajes_ordenador",
-        zipEndings: "09_finales_alternativos",
+        zipEndings: "09_finali_alternativos",
         enterTheme: "INTRODUCE TEMAS OPCIONALES DE LA MISIÓN (O DEJA VACÍO PARA EL CAOS TOTAL):",
         themePlaceholder: "ej. Rebelión de robots, Escasez de alimentos, Bucle burocrático...",
     },
@@ -249,7 +241,6 @@ const translations = {
         accordionSteps: "Szenario-Schritte",
         accordionInfoCards: "Infokarten (NSCs, Orte, Gegenstände)",
         accordionClues: "Hinweise",
-        accordionComputer: "Computer-Nachrichten",
         accordionEndings: "Alternative Enden",
         step: "Schritt",
         summaryTable: "Zusammenfassungstabelle",
@@ -266,7 +257,6 @@ const translations = {
         zipSteps: "05_szenario_schritte",
         zipInfoCards: "06_infokarten",
         zipClues: "07_hinweise",
-        zipComputer: "08_computer_nachrichten",
         zipEndings: "09_alternative_enden",
         enterTheme: "OPTIONALE MISSIONSTHEMEN EINGEBEN (ODER FÜR TOTALES CHAOS LEER LASSEN):",
         themePlaceholder: "z.B. Roboter-Aufstand, Nahrungsmittelknappheit, Bürokratieschleife...",
@@ -491,14 +481,6 @@ ${indice.contenu}
 `
         ).join("\n---\n\n");
         zip.file(`${currentT.zipClues}.md`, `# ${currentT.accordionClues}\n\n${indicesText}`);
-
-        const messagesText = generatedScenario.messagesOrdinateur.map(msg => 
-`\`\`\`
-${msg}
-\`\`\`
-`
-        ).join("\n");
-        zip.file(`${currentT.zipComputer}.md`, `# ${currentT.accordionComputer}\n\n${messagesText}`);
         
         if (generatedScenario.finsAlternatives && generatedScenario.finsAlternatives.length > 0) {
             const endingsText = generatedScenario.finsAlternatives.map(e =>

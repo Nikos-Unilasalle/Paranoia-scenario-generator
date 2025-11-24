@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { ScenarioContent } from '../types';
 
@@ -77,13 +76,12 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
     6. **PITCH & COVER:** You must generate a short "Pitch" (1-2 sentences) summarizing the mission, and a detailed prompt for a Cover Image.
 
     Adhere to the following content and length constraints:
-    - 'joueurs': Generate exactly ${playerCount} player characters with conflicting goals.
+    - 'joueurs': Generate exactly ${playerCount} player characters. Do NOT use specific names like "Bob-R-3". Use generic placeholders like "Player A", "Player B", etc.
     - 'briefings': Generate an individual briefing for each player character.
     - 'presentation': Write a presentation of about 500 words for the game master.
-    - 'etapes': Each 'description' must be detailed (approx 500-800 words) setting the scene. Then provide an array of 2 to 5 'options' with specific consequences.
+    - 'etapes': Each 'description' must be MASSIVE and EXTREMELY DETAILED (MINIMUM 1500 words). It MUST act as a complete guide for the Game Master, describing the environment, the location, sensory details, and the behavior/mannerisms of every character involved in that step.
     - 'fiches': Generate at least 8 detailed cards (200-300 words each).
     - 'indices': Generate at least 6 substantial clues linked to decisions.
-    - 'messagesOrdinateur': Generate at least 8 computer messages, some contradictory.
     - 'finsAlternatives': Generate 3 distinct, absurd endings based on player performance.
   `;
   
@@ -102,11 +100,11 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             introduction: { type: Type.STRING, description: "A long and immersive flavor text to be read to the players." },
             joueurs: {
               type: Type.ARRAY,
-              description: `A list of ${playerCount} player characters. ENSURE Secret Objectives conflict with each other to create PvP tension.`,
+              description: `A list of ${playerCount} player characters. Use generic names "Player A", "Player B", etc. ENSURE Secret Objectives conflict with each other to create PvP tension.`,
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  nom: { type: Type.STRING, description: "e.g., ZAP-R-DED" },
+                  nom: { type: Type.STRING, description: "Use generic names: 'Player A', 'Player B', etc." },
                   description: { type: Type.STRING, description: "Very detailed physical description and personality (2-3 paragraphs)." },
                   societeSecrete: { type: Type.STRING, description: "e.g., The Enlightened Freemasons" },
                   objectifSocieteSecrete: { type: Type.STRING, description: "A detailed secret objective. MUST conflict with other players." },
@@ -122,7 +120,7 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  pourJoueur: { type: Type.STRING, description: "The name of the player character this briefing is for." },
+                  pourJoueur: { type: Type.STRING, description: "The name of the player character this briefing is for (Player A, Player B...)." },
                   contenu: { type: Type.STRING, description: "The content of the secret briefing for this player." }
                 },
                 required: ["pourJoueur", "contenu"]
@@ -130,12 +128,12 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             etapes: {
               type: Type.ARRAY,
-              description: "5 to 7 key stages. Must include DYNAMIC BRANCHING PATHS.",
+              description: "5 to 7 key stages. Each description MUST be at least 1500 words long.",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   titre: { type: Type.STRING, description: "Title of the step." },
-                  description: { type: Type.STRING, description: "Detailed narrative setting the scene." },
+                  description: { type: Type.STRING, description: "EXTREMELY LONG (1500+ words). Detailed environment, sensory details, location specificities, and character mannerisms." },
                   options: {
                     type: Type.ARRAY,
                     description: "A list of 2 to 5 distinct choices available to players.",
@@ -179,11 +177,6 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
                 required: ["titre", "contenu"]
               }
             },
-            messagesOrdinateur: {
-              type: Type.ARRAY,
-              description: "At least 8 messages from The Computer. Include contradictory orders and oppressive praise.",
-              items: { type: Type.STRING }
-            },
             finsAlternatives: {
               type: Type.ARRAY,
               description: "3 different possible endings based on player choices/success.",
@@ -199,10 +192,10 @@ export async function generateScenarioContent(selectedIdea: string, playerCount:
             },
             imagePrompt: {
               type: Type.STRING,
-              description: "A single, highly detailed prompt for the main cover image of the scenario. IMPORTANT: Prompts must be PG-13. Do NOT use words like 'demonic', 'torture', 'gore', 'blood', 'suicide', 'sinister', or 'menacing'. Use 'unsettling', 'broken', 'red fluid', 'termination' instead. The prompt MUST end with: 'Style: Detailed digital comic book art style, retro sci-fi / dieselpunk aesthetic from the 90's. Detailed grungy industrial sci-fi environnement. Thick, clean linework with distinct outlines. Muted, earthy color palette: olive greens, rusted browns, metallic beige dominating the environment. Dramatic volumetric lighting with deep shadows. Strong emissive light sources: glowing green energy, vibrant purple plasma discharge with a shimmering, static effect. Dynamic action poses for characters. Characters are semi-realistic. Detailed environmental elements: scattered debris, visible cables and conduits, worn-out machinery, broken panels. Atmospheric, dystopian feel.'"
+              description: "A single, highly detailed prompt for the main cover image of the scenario. IMPORTANT: Prompts must be PG-13. Do NOT use words like 'demonic', 'torture', 'gore', 'blood', 'suicide', 'sinister', or 'menacing'. Use 'unsettling', 'broken', 'red fluid', 'termination' instead. The prompt MUST end with: 'Style: High quality 16-bit pixel art style, retro sci-fi / dieselpunk aesthetic from the 90's. Dithering effects and pixelated textures. Detailed grungy industrial sci-fi environnement. Muted, earthy color palette: olive greens, rusted browns, metallic beige dominating the environment. Dramatic volumetric lighting with deep shadows. Strong emissive light sources: glowing green energy, vibrant purple plasma discharge with a shimmering effect. Dynamic action poses for characters. Characters are semi-realistic but pixelated. Detailed environmental elements: scattered debris, visible cables and conduits, worn-out machinery, broken panels. Atmospheric, dystopian feel.'"
             }
           },
-          required: ["titre", "pitch", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "messagesOrdinateur", "finsAlternatives", "imagePrompt"]
+          required: ["titre", "pitch", "presentation", "introduction", "joueurs", "briefings", "etapes", "fiches", "indices", "finsAlternatives", "imagePrompt"]
         }
       }
     });
